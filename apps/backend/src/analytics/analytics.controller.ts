@@ -10,7 +10,7 @@ import { PrismaService } from '@reduced.to/prisma';
 export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService, private readonly prismaService: PrismaService) {}
 
-  @Get(':key')
+  @Get(':key/clicks')
   async getAnalytics(@Param('key') key: string, @Query('days') days: number, @UserCtx() user: UserContext) {
     const link = await this.prismaService.link.findUnique({
       where: { key, userId: user.id },
@@ -27,5 +27,19 @@ export class AnalyticsController {
       url: link.url,
       clicksOverTime: data,
     };
+  }
+
+  @Get(':key/data')
+  async getDataOverTime(@Param('key') key: string, @Query('days') days: number, @UserCtx() user: UserContext) {
+    const link = await this.prismaService.link.findUnique({
+      where: { key, userId: user.id },
+      select: { id: true },
+    });
+
+    if (!link) {
+      throw new NotFoundException('Link not found');
+    }
+
+    return this.analyticsService.getDataOverTime(link.id, days);
   }
 }

@@ -107,7 +107,7 @@ const updateChartDescription = (chartDescription: Signal<string>, daysDuration: 
 // Utility function to fetch chart data
 async function fetchChartData(key: string, days: number) {
   try {
-    const response = await authorizedFetch(`${process.env.CLIENTSIDE_API_DOMAIN}/api/v1/analytics/${key}?days=${days}`);
+    const response = await authorizedFetch(`${process.env.CLIENTSIDE_API_DOMAIN}/api/v1/analytics/${key}/clicks?days=${days}`);
     return response.json();
   } catch (err) {
     console.error('Could not fetch clicks chart data', err);

@@ -72,7 +72,7 @@ function fillDays(startDate: Date, endDate: Date, data: { day: string; count: st
     if (entry) {
       filledData.push({ x: new Date(entry.day), y: parseInt(entry.count, 10) });
     } else {
-      filledData.push({ x: new Date(d), y: 0 });
+      filledData.push({ x: new Date(d.toISOString().slice(0, 10)), y: 0 });
     }
   }
 }

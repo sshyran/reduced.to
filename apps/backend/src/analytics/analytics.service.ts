@@ -18,7 +18,20 @@ export class AnalyticsService {
     });
   }
 
-  async getClicksOverTime(linkId: string, durationDays = 30): Promise<any[]> {
+  async getDataOverTime(linkId: string, durationDays = 30) {
+    const fromDate = sub(new Date(), { days: durationDays });
+
+    return this.prismaService.visit.findMany({
+      where: {
+        linkId,
+        createdAt: {
+          gte: fromDate,
+        },
+      },
+    });
+  }
+
+  async getClicksOverTime(linkId: string, durationDays = 30): Promise<{ createdAt: string; count: string }[]> {
     const fromDate = sub(new Date(), { days: durationDays });
     const trunc = durationDays === 1 ? 'min' : 'day';
 

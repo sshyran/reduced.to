@@ -1,10 +1,11 @@
 import { DocumentHead, routeLoader$ } from '@builder.io/qwik-city';
 import { serverSideFetch } from '../../../../shared/auth.service';
-import { component$, useSignal } from '@builder.io/qwik';
+import { component$, useSignal, useVisibleTask$ } from '@builder.io/qwik';
 import { ClicksChart } from '../../../../components/dashboard/analytics/clicks-chart/clicks-chart';
+import { GeoChart } from '../../../../components/dashboard/analytics/geo-chart/geo-chart';
 
-export const useGetAnalytics = routeLoader$(async ({ params: { key }, cookie, redirect }) => {
-  const res = await serverSideFetch(`${process.env.API_DOMAIN}/api/v1/analytics/${key}?days=7`, cookie);
+export const useGetClicks = routeLoader$(async ({ params: { key }, cookie, redirect }) => {
+  const res = await serverSideFetch(`${process.env.API_DOMAIN}/api/v1/analytics/${key}/clicks?days=7`, cookie);
 
   if (res.status !== 200) {
     throw redirect(302, '/unknown');
@@ -17,9 +18,28 @@ export const useGetAnalytics = routeLoader$(async ({ params: { key }, cookie, re
   };
 });
 
+export const useGetData = routeLoader$(async ({ params: { key }, cookie, redirect }) => {
+  const res = await serverSideFetch(`${process.env.API_DOMAIN}/api/v1/analytics/${key}/data?days=7`, cookie);
+
+  if (res.status !== 200) {
+    throw redirect(302, '/unknown');
+  }
+
+  const data = await res.json();
+  return {
+    data,
+  };
+});
+
 export default component$(() => {
   const daysDuration = useSignal(7);
-  const analytics = useGetAnalytics();
+  const clicks = useGetClicks();
+  const data = useGetData();
+
+  useVisibleTask$(() => {
+    console.log(clicks.value);
+    console.log(data.value);
+  });
 
   return (
     <>
@@ -48,12 +68,20 @@ export default component$(() => {
           </select>
         </div>
       </div>
-      <ClicksChart
-        urlKey={analytics.value.key}
-        daysDuration={daysDuration.value}
-        initialData={analytics.value.data.clicksOverTime}
-        url={analytics.value.data.url}
-      />
+      <div class="flex flex-col gap-5">
+        <ClicksChart
+          urlKey={clicks.value.key}
+          daysDuration={daysDuration.value}
+          initialData={clicks.value.data.clicksOverTime}
+          url={clicks.value.data.url}
+        />
+        <GeoChart
+          urlKey={clicks.value.key}
+          daysDuration={daysDuration.value}
+          initialData={data.value.data}
+          url={data.value.data.url}
+        />
+      </div>
     </>
   );
 });
